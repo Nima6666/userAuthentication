@@ -15,6 +15,11 @@ app.use(express.json());
 // database connection
 require("./database/dbConnection");
 
+// routes
+const userRouter = require("./routes/userRoute");
+
+app.use("/user", userRouter);
+
 app.get("/", (req, res) => {
   res.send("server running");
 });

@@ -1,7 +1,7 @@
 const route = require("express").Router();
 const userController = require("../controller/userController");
 const auth = require("../middleware/auth");
-const pswdLinkValid = require("../middleware/verifyResetLink");
+const keyVerification = require("../middleware/keyVerification");
 
 route.post("/register", userController.register);
 
@@ -25,13 +25,13 @@ route.post("/forgetPassword", userController.sendPasswordResetLink);
 // for verifying password reset link
 route.post(
   "/verifyResetLink",
-  pswdLinkValid.verifyResetLink,
+  keyVerification.verifyResetLink,
   userController.verifyPasswordResetLink
 );
 
 route.post(
   "/setNewPassword",
-  pswdLinkValid.verifyResetLink,
+  keyVerification.verifyResetLink,
   userController.setNewPassword
 );
 

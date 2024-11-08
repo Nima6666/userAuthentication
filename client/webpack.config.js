@@ -17,6 +17,7 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, "dist"),
     },
+    historyApiFallback: true,
     port: 4444,
     open: true,
   },
@@ -27,16 +28,17 @@ module.exports = {
         use: ["style-loader", "css-loader", "sass-loader"],
       },
       {
-        test: /\.(jpg|png|jpeg|gif)$/i,
+        test: /\.(jpg|png|jpeg|gif|svg)$/i,
         type: "asset/resource",
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: "To Do List",
+      title: "Palm Mind Task",
       filename: "index.html",
       template: "./src/template.html",
+      favicon: "./src/assets/icon.svg",
     }),
   ],
 };

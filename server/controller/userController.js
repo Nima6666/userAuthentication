@@ -28,6 +28,8 @@ const transporter = nodemailer.createTransport({
 module.exports.register = asyncHandler(async (req, res) => {
   const { email, name, password } = req.body;
 
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
   if (!email || !password || !name) {
     return res.status(400).json({
       success: false,
@@ -78,7 +80,7 @@ module.exports.login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: email });
 
   if (!user) {
-    return res.status(404).json({"message: User not found"})
+    return res.status(404).json({ message: "User not found" });
   }
 
   // validating password
@@ -166,7 +168,7 @@ module.exports.sendPasswordResetLink = asyncHandler(async (req, res) => {
   if (userFound) {
     let prevKeyValid = false;
 
-    const prevKey = await ResetKey.findOne({user_id: userFound._id}).sort(
+    const prevKey = await ResetKey.findOne({ user_id: userFound._id }).sort(
       "-created"
     );
 

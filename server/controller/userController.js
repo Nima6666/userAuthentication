@@ -258,3 +258,28 @@ module.exports.setNewPassword = asyncHandler(async (req, res) => {
     message: "Login with your new password",
   });
 });
+
+// get users
+module.exports.getUsers = asyncHandler(async (req, res) => {
+  const users = await User.find().select("-password");
+  res.json({
+    success: true,
+    users: users,
+  });
+});
+
+// delete user
+module.exports.deleteUser = asyncHandler(async (req, res) => {
+  const userAuthenticated = req.userAuthenticated;
+
+  const userDeleted = await User.findByIdAndDelete(userAuthenticated._id);
+
+  console.log(userDeleted);
+
+  if (userDeleted) {
+    res.json({
+      success: true,
+      message: "account deleted",
+    });
+  }
+});

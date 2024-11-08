@@ -41,6 +41,12 @@ const location = window.location.pathname;
 
     if (location == "/profile") {
       userDomActions.renderMyProfile(user);
+    } else if (location == "/") {
+      userDomActions.renderUsers(token);
+    } else if (location == "/changepassword") {
+      userDomActions.renderChangePasswordPage(token);
+    } else {
+      window.location.href = "/";
     }
   } else {
     domActions.renderHeader();
@@ -51,6 +57,8 @@ const location = window.location.pathname;
       userDomActions.renderLoginPage();
     } else if (location === "/signup") {
       userDomActions.renderSignupPage();
+    } else {
+      window.location.href = "/";
     }
   }
 })();

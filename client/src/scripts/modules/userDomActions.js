@@ -3,6 +3,14 @@ import $ from "jquery";
 
 export const userDomActions = (() => {
   const body = $("body");
+
+  const errorContainer = $("<p>", {
+    class: "text-danger mt-2",
+  });
+  const successContainer = $("<p>", {
+    class: "text-success mt-2",
+  });
+
   const server = "http://localhost:3000";
 
   const renderLoginPage = () => {
@@ -78,9 +86,7 @@ export const userDomActions = (() => {
         fontSize: "16px",
       },
     });
-    const errorContainer = $("<p>", {
-      class: "text-danger mt-2",
-    });
+
     dontHaveAccountContainer.append(dontHaveAccount);
     loginForm.append(
       formTitle,
@@ -88,7 +94,8 @@ export const userDomActions = (() => {
       passwordGroup,
       dontHaveAccountContainer,
       submitButton,
-      errorContainer
+      errorContainer,
+      successContainer
     );
     loginContainer.append(loginForm);
     body.append(loginContainer);
@@ -100,11 +107,12 @@ export const userDomActions = (() => {
       const password = passwordInput.val();
 
       try {
+        errorContainer.text("");
         loginForm.css({
           opacity: 0.6,
           pointerEvents: "none",
         });
-        submitButton.text("Please Wait...");
+        submitButton.text("Loggin In...");
         const response = await axios.post(`${server}/user/`, {
           email: email,
           password: password,
@@ -113,9 +121,21 @@ export const userDomActions = (() => {
         if (response.data.success) {
           console.log(response.data.message);
           localStorage.setItem("token", response.data.user.token);
-          window.location.href = "/";
+          loginForm.css({
+            opacity: 1,
+          });
+          submitButton.text("redirecting to dashboard");
+          successContainer.text(response.data.message);
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 3000);
         } else {
           errorContainer.text(response.data.message);
+          loginForm.css({
+            opacity: 1,
+            pointerEvents: "all",
+          });
+          submitButton.text("Login");
         }
       } catch (error) {
         console.log(error);
@@ -124,7 +144,6 @@ export const userDomActions = (() => {
         } else {
           errorContainer.text(error.message);
         }
-      } finally {
         loginForm.css({
           opacity: 1,
           pointerEvents: "all",
@@ -236,9 +255,6 @@ export const userDomActions = (() => {
         fontSize: "16px",
       },
     });
-    const errorContainer = $("<p>", {
-      class: "text-danger mt-2",
-    });
     alreadyHaveAccountContainer.append(alreadyHaveAccount);
     signupForm.append(
       formTitle,
@@ -248,7 +264,8 @@ export const userDomActions = (() => {
       confirmPasswordGroup,
       alreadyHaveAccountContainer,
       submitButton,
-      errorContainer
+      errorContainer,
+      successContainer
     );
     signupContainer.append(signupForm);
     body.append(signupContainer);
@@ -270,6 +287,7 @@ export const userDomActions = (() => {
           opacity: 0.6,
           pointerEvents: "none",
         });
+        errorContainer.text("");
         submitButton.text("Please Wait...");
         const response = await axios.post(`${server}/user/register`, {
           email: email,
@@ -278,9 +296,21 @@ export const userDomActions = (() => {
         });
         console.log(response);
         if (response.data.success) {
-          console.log(response.data.message);
+          successContainer.text(response.data.message);
+          signupForm.css({
+            opacity: 1,
+          });
+          submitButton.text("Redirecting to login page");
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 3000);
         } else {
           errorContainer.text(response.data.message);
+          signupForm.css({
+            opacity: 1,
+            pointerEvents: "all",
+          });
+          submitButton.text("Sign Up");
         }
       } catch (error) {
         console.log(error);
@@ -289,7 +319,6 @@ export const userDomActions = (() => {
         } else {
           errorContainer.text(error.message);
         }
-      } finally {
         signupForm.css({
           opacity: 1,
           pointerEvents: "all",
@@ -300,9 +329,8 @@ export const userDomActions = (() => {
   };
 
   const renderMyProfile = (user) => {
-    // Create a container to hold the profile data
     const profileContainer = $("<div>", {
-      class: "profile-container p-4 border rounded shadow-sm bg-white",
+      class: "profile-container p-4 border rounded shadow-sm bg-white my-5",
       css: {
         maxWidth: "500px",
         margin: "0 auto",
@@ -310,39 +338,297 @@ export const userDomActions = (() => {
       },
     });
 
-    // Title
     const profileTitle = $("<h3>", {
       text: `${user.name}'s Profile`,
       class: "text-center text-primary mb-3",
     });
-
-    // Profile Information
     const profileInfo = $("<div>", { class: "profile-info" });
 
-    // Name
     const userName = $("<div>", {
       class: "user-name mb-2",
       html: `<strong>Name:</strong> ${user.name}`,
     });
 
-    // Email
     const userEmail = $("<div>", {
       class: "user-email mb-2",
       html: `<strong>Email:</strong> ${user.email}`,
     });
 
-    // Append the profile data to the profileContainer
+    const changePasswordButton = $("<button>", {
+      text: "Change Password",
+      class: "btn btn-primary w-100 mt-3",
+      css: {
+        fontSize: "16px",
+      },
+    }).on("click", () => {
+      window.location.href = "/changepassword";
+    });
+    const deleteMyAccountButton = $("<button>", {
+      text: "Delete My Account",
+      class: "btn btn-danger w-100 mt-3",
+      css: {
+        fontSize: "16px",
+      },
+    }).on("click", async () => {
+      console.log(user);
+      try {
+        deleteMyAccountButton.text("deleting...");
+        deleteMyAccountButton.prop("disabled", true);
+        const response = await axios.delete(`${server}/user`, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        });
+        console.log(response);
+        if (response.data.success) {
+          deleteMyAccountButton.text("logging you out");
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 3000);
+        } else {
+          errorContainer.text(response.data.message);
+          deleteMyAccountButton.prop("disabled", false);
+        }
+      } catch (error) {
+        console.log(error);
+        if (error.response && error.response.data.message) {
+          errorContainer.text(error.response.data.message);
+        } else {
+          errorContainer.text(error.message);
+        }
+        deleteMyAccountButton.prop("disabled", false);
+      }
+    });
     profileInfo.append(userName, userEmail);
-    profileContainer.append(profileTitle, profileInfo);
+    profileContainer.append(
+      profileTitle,
+      profileInfo,
+      changePasswordButton,
+      deleteMyAccountButton,
+      errorContainer
+    );
 
-    // Append the profile container to the body or a specific element
     body.append(profileContainer);
+  };
+
+  const renderUsers = async (token) => {
+    let users;
+    const tableContainer = $("<div>", {
+      class: "container",
+    });
+    tableContainer.html(`
+      
+    <h2 class="text-center my-4">Registered Users</h2>
+    <table id="userTable" class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="userModalLabel">User Information</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Name:</strong> <span id="modalUserName"></span></p>
+            <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>`);
+    body.append(tableContainer);
+    try {
+      const response = await axios.get(`${server}/user/`, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      console.log(response);
+      if (response.data.success) {
+        users = response.data.users;
+        const tableBody = $("#userTable tbody");
+        tableBody.empty();
+
+        users.forEach((user) => {
+          // Create a row for each user
+          const row = $("<tr>");
+          row.append($("<td>").text(user.name));
+          row.append($("<td>").text(user.email));
+
+          // Create a button to view details in a modal
+          const viewButton = $("<button>", {
+            class: "btn btn-primary btn-sm",
+            text: "View Details",
+            click: function () {
+              // Fill modal with user details
+              $("#modalUserName").text(user.name);
+              $("#modalUserEmail").text(user.email);
+
+              // Show the modal
+              const modal = new bootstrap.Modal(
+                document.getElementById("userModal")
+              );
+              modal.show();
+            },
+          });
+
+          // Append the button to the action cell and add it to the row
+          const actionCell = $("<td>").append(viewButton);
+          row.append(actionCell);
+          tableBody.append(row);
+        });
+      } else {
+        errorContainer.text(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const renderChangePasswordPage = (token) => {
+    const submitButton = $("<button>", {
+      type: "submit",
+      class: "btn btn-primary w-100 mt-3",
+      text: "Change Password",
+    });
+    const form = $("<form>", {
+      class: "p-4 border rounded shadow-sm bg-white my-5",
+      css: { maxWidth: "400px", margin: "0 auto" },
+      submit: async (e) => {
+        e.preventDefault();
+        const currentPassword = $("#currentPassword").val();
+        const newPassword = $("#newPassword").val();
+        const confirmPassword = $("#confirmPassword").val();
+
+        if (newPassword !== confirmPassword) {
+          return errorContainer.text("password doesnt match");
+        }
+
+        try {
+          errorContainer.text("");
+
+          form.css({
+            opacity: 0.6,
+            pointerEvents: "none",
+          });
+          submitButton.text("Please Wait...");
+          const response = await axios.post(
+            `${server}/user/resetPassword`,
+            {
+              currentPassword,
+              newPassword,
+            },
+            {
+              headers: {
+                Authorization: token,
+              },
+            }
+          );
+          console.log(response);
+          if (response.data.success) {
+            console.log(response.data.message);
+            form.css({
+              opacity: 1,
+            });
+            submitButton.text("redirecting to homepage...");
+            successContainer.text(response.data.message);
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 3000);
+          } else {
+            form.css({
+              opacity: 1,
+              pointerEvents: "all",
+            });
+            errorContainer.text(response.data.message);
+            submitButton.text("Change Password");
+          }
+        } catch (error) {
+          console.log(error);
+          if (error.response && error.response.data.message) {
+            errorContainer.text(error.response.data.message);
+          } else {
+            errorContainer.text(error.message);
+          }
+          form.css({
+            opacity: 1,
+            pointerEvents: "all",
+          });
+          submitButton.text("Change Password");
+        }
+      },
+    });
+
+    form.append(
+      $("<h3>", { text: "Change Password", class: "mb-3 text-center" })
+    );
+
+    form.append(
+      $("<div>", { class: "mb-3" }).append(
+        $("<label>", {
+          for: "currentPassword",
+          class: "form-label",
+          text: "Current Password",
+        }),
+        $("<input>", {
+          type: "password",
+          id: "currentPassword",
+          class: "form-control",
+          required: true,
+        })
+      )
+    );
+
+    form.append(
+      $("<div>", { class: "mb-3" }).append(
+        $("<label>", {
+          for: "newPassword",
+          class: "form-label",
+          text: "New Password",
+        }),
+        $("<input>", {
+          type: "password",
+          id: "newPassword",
+          class: "form-control",
+          required: true,
+        })
+      )
+    );
+
+    form.append(
+      $("<div>", { class: "mb-3" }).append(
+        $("<label>", {
+          for: "confirmPassword",
+          class: "form-label",
+          text: "Confirm New Password",
+        }),
+        $("<input>", {
+          type: "password",
+          id: "confirmPassword",
+          class: "form-control",
+          required: true,
+        })
+      )
+    );
+
+    form.append(submitButton, errorContainer, successContainer);
+
+    body.append(form);
   };
 
   return {
     renderLoginPage,
     renderSignupPage,
     renderMyProfile,
+    renderUsers,
+    renderChangePasswordPage,
     server,
   };
 })();

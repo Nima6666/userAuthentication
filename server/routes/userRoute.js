@@ -10,8 +10,10 @@ route.get(
   auth.isAuthenticated,
   userController.getUserByToken
 );
+route.delete("/", auth.isAuthenticated, userController.deleteUser);
 
 route.post("/", userController.login);
+route.get("/", auth.isAuthenticated, userController.getUsers);
 
 route.post(
   "/resetPassword",
